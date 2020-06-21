@@ -1,0 +1,69 @@
+﻿@page "/claims"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@*@attribute [Authorize(Roles = "Administrators")]*@
+@using Microsoft.AspNetCore.Components.Authorization
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div>
+    <h3>Claims</h3>
+
+    <p>List of claims for the current user.</p>
+</div>
+
+<AuthorizeView Roles="Users, Administrators">
+    <Authorized>
+        <div>
+            <p>Hello, @context.User.Identity.Name!</p>
+
+            @if (_claims.Count() > 0)
+            {
+                <ul>
+                    @foreach (var claim in _claims)
+                    {
+                        <li>@claim.Type &ndash; @claim.Value</li>
+                    }
+                </ul>
+            }
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="w-75 p-3">
+            <p>You'll need to <a href="" @onclick="IdentityLogin" @onclick:preventDefault><b>login</b></a> as a <b>User</b> (<i>email: <b>user@example.com</b> password: <b>Qwerty1234#</b></i>) or an <b>Administrator</b> (<i>email: <b>admin@example.com</b> password: <b>Qwerty1234#</b></i>) to view this component.</p>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+<div>
+    <p>@_authMessage</p>
+</div>
+
+@code
+{
+    private string _authMessage;
+    private IEnumerable<Claim> _claims = Enumerable.Empty<Claim>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity.IsAuthenticated)
+        {
+            _authMessage = $"{user.Identity.Name} is authenticated.";
+            _claims = user.Claims;
+        }
+        else
+        {
+            _authMessage = "The user is NOT authenticated.";
+        }
+    }
+
+    private void IdentityLogin()
+    {
+        Navigation.NavigateTo($"authentication/login?returnUrl=" + Uri.EscapeDataString(Navigation.Uri));
+    }
+}

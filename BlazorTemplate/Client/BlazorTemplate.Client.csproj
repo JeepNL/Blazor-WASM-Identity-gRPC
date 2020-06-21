@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<RazorLangVersion>3.0</RazorLangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="3.2.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Build" Version="3.2.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="3.2.0" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="3.2.0" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="5.0.0-preview.5.20278.1" />
+		<PackageReference Include="System.Net.Http.Json" Version="5.0.0-preview.5.20278.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Google.Protobuf" Version="3.12.3" />
+		<PackageReference Include="Grpc.Net.Client" Version="2.30.0-pre1" />
+		<PackageReference Include="Grpc.Net.Client.Web" Version="2.30.0-pre1" />
+		<PackageReference Include="Grpc.Tools" Version="2.30.0-pre1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Protobuf Include="..\Shared\Contracts\greeter.proto" GrpcServices="Client" Link="Contracts\greeter.proto" Access="Internal" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Shared\BlazorTemplate.Shared.csproj" />
+	</ItemGroup>
+</Project>

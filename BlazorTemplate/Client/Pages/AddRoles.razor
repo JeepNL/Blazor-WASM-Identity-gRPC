@@ -1,0 +1,91 @@
+﻿@page "/addroles"
+@using System.Security.Claims
+@using Microsoft.AspNetCore.Authorization
+@using System.ComponentModel.DataAnnotations
+@*@attribute [Authorize(Roles = "Administrators")]*@
+@inject HttpClient HttpClient
+@inject NavigationManager Navigation
+
+<div>
+    <h3>Roles</h3>
+
+    <p>Add a role to the current user.</p>
+</div>
+
+<AuthorizeView Roles="Administrators">
+    <Authorized Context="Auth">
+        <div>
+            @if (_user != null)
+            {
+                <ul>
+                    @foreach (var role in _user.Claims.Where(c => c.Type == "role"))
+                    {
+                        <li>@role.Value</li>
+                    }
+                </ul>
+                <EditForm Model="_newRole" OnValidSubmit="Add_Role">
+                    <p class="input-group">
+                        <label>
+                            New role
+                            <InputText @bind-Value="_newRole.NewRole" />
+                        </label>
+                        <ValidationMessage For="() => _newRole.NewRole" />
+                    </p>
+                    <p>
+                        <input class="btn btn-primary" type="submit" value="Add new role" />
+                    </p>
+                </EditForm>
+                if (_successMessage != null)
+                {
+                    <p class="alert alert-success">@_successMessage<button type="button" class="close" @onclick="Dismiss"><span aria-hidden="true">&times;</span></button></p>
+                }
+            }
+            else
+            {
+                <p>User not available</p>
+            }
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="w-75 p-3">
+            <p>You'll need to <a href="" @onclick="IdentityLogin" @onclick:preventDefault><b>login</b></a> as an <b>Administrator</b> (<i>email: <b>admin@example.com</b> password: <b>Qwerty1234#</b></i>) to view this component.</p>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code
+{
+    ClaimsPrincipal _user;
+    NewRoleForm _newRole = new NewRoleForm();
+    string _successMessage;
+
+    [CascadingParameter] Task<AuthenticationState> AuthenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _user = (await AuthenticationState).User;
+        await base.OnInitializedAsync();
+    }
+
+    public async Task Add_Role()
+    {
+        var response = await HttpClient.PostAsJsonAsync("/User/AddRole", _newRole);
+        response.EnsureSuccessStatusCode();
+        _successMessage = $"Role '{_newRole.NewRole}' successfully added. Logout and login to see the role reflected";
+        _newRole = new NewRoleForm();
+    }
+
+    public void Dismiss() => _successMessage = null;
+
+    private class NewRoleForm
+    {
+        [Required]
+        public string NewRole { get; set; }
+    }
+
+    private void IdentityLogin()
+    {
+        Navigation.NavigateTo($"authentication/login?returnUrl=" + Uri.EscapeDataString(Navigation.Uri));
+    }
+
+}

@@ -1,0 +1,55 @@
+﻿@page "/greetergrpc"
+@using Microsoft.AspNetCore.Authorization
+@using BlazorTemplate.Shared
+@*@attribute [Authorize(Roles = "Administrators")]*@
+@inject Greeter.GreeterClient GreeterClient
+@inject NavigationManager Navigation
+
+<div>
+    <h1>Invoke gRPC service</h1>
+
+    <p>gRPC response from the server with authorization</p>
+</div>
+
+<AuthorizeView Roles="Administrators, Users">
+    <Authorized>
+        <div class="w-75 p-3">
+            <p>If you're logged in as a normal user (<i>user@example.com / Qwerty1234#</i>), you'll see this component but submitting your name won't work, (<i>you'll see an error in your browser's developer console</i>: <b>403: Forbidden</b>) because the gRPC service requires an Administrator Role.</p>
+
+            <p>Log in as an administrator (<i>admin@example.com / Qwerty1234#</i>) and this component will work.</p>
+
+            <p>
+                <input @bind="yourName" placeholder="Type your name ..." />
+                <button @onclick="GetGreeting" class="btn btn-primary">Call gRPC service</button>
+            </p>
+
+            <p>The 403 error, when logged in as a normal user, is expected behaviour. This will show you the gRPC service is working correctly, it only accepts users with an Administators Role</p>
+
+            <p>Server response: <b>@serverResponse</b></p>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="w-75 p-3">
+            <p>You'll need to <a href="" @onclick="IdentityLogin" @onclick:preventDefault><b>login</b></a> to view this component.</p>
+
+            <p>When you login as a normal user (<i>email: <b>user@example.com</b> password: <b>Qwerty1234#</b></i>), you'll see this component but when you submit your name you'll see an error (<i>in your browser's developer console</i>: <b>403: Forbidden</b>) because the gRPC service requires you to login as an Administrator (<i>email: <b>admin@example.com</b> Password: <b>Qwerty1234#</b></i>)</p>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    string yourName = string.Empty;
+    string serverResponse;
+
+    async Task GetGreeting()
+    {
+        var request = new HelloRequest { Name = yourName };
+        var reply = await GreeterClient.SayHelloAsync(request);
+        serverResponse = reply.Message;
+    }
+
+    private void IdentityLogin()
+    {
+        Navigation.NavigateTo($"authentication/login?returnUrl=" + Uri.EscapeDataString(Navigation.Uri));
+    }
+}
