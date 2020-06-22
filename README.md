@@ -5,18 +5,18 @@ This **.NET 5 Preview** repo combines two repo's by **@javiercn**:
 1. https://github.com/javiercn/BlazorAuthRoles
 2. https://github.com/javiercn/BlazorGrpcAuth
 
-And adds Role Authorization to the Greeter gRPC Service:
+and adds Role Authorization to the [Greeter](BlazorTemplate/Client/Pages/GreeterGrpc.razor) [gRPC](BlazorTemplate/Shared/Contracts/greeter.proto) [Service](BlazorTemplate/Server/GrpcServices/GreeterService.cs):
 
-***Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)***
+_Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_
 
     endpoints
         .MapGrpcService<GreeterService>()
         .RequireAuthorization(new AuthorizeAttribute { Roles = "Administrator"})
         .EnableGrpcWeb();
         
-I've also added a 'Claims' page with a list of the current user's claims.
+I've also added a Client/[Claims.razor](BlazorTemplate/Client/Pages/Claims.razor) page with a list of the current user's claims.
 
-It uses the Kestrel webserver as default, a SQLite database and is "*CTRL-F5'able*" without any further configuration.
+It uses Kestrel as the default webserver, a SQLite database and is "*CTRL-F5'able*" without any further configuration.
 
 You can delete de SQLite database and migrations folder if you want and use the following commands in Visual Studio's Package Manager Console to re-create the db.
 
