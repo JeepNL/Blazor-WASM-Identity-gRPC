@@ -7,7 +7,7 @@ This **.NET 5 Preview** repo combines two repo's by **@javiercn**:
 
 And adds Role Authorization to the Greeter gRPC Service:
 
-*Server/Startup.cs*
+***Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)***
 
     endpoints
         .MapGrpcService<GreeterService>()
