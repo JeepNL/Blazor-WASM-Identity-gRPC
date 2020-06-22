@@ -39,7 +39,7 @@ The 'Users' role will be assigned to: `user@example.com`
 
 #### TODO 1 - Additional Claim(s)
 
-I've extended ASP.NET Identity AspNetUsers table with an extra 'CustomClaim' field (_see: Server/Models/[ApplicationUser.cs](BlazorTemplate/Server/Models/ApplicationUser.cs)_). I want to use that claim value in the client but haven't figured out how to do that.
+I've extended ASP.NET Identity AspNetUsers table with an extra 'CustomClaim' field (_see: Server/Models/[ApplicationUser.cs](BlazorTemplate/Server/Models/ApplicationUser.cs)_). I want to use that ([auto seeded](BlazorTemplate/Server/Data/SeedData.cs)) `CustomClaim` value in the client but haven't figured out how to do that.
 
 #### TODO 2 - Claims Profile Service
 
