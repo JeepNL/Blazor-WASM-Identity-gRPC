@@ -5,7 +5,7 @@ This **.NET 5 Preview** repo combines two repo's by **@javiercn**:
 1. https://github.com/javiercn/BlazorAuthRoles
 2. https://github.com/javiercn/BlazorGrpcAuth
 
-and adds Role Authorization to the [Greeter](BlazorTemplate/Client/Pages/GreeterGrpc.razor) [gRPC](BlazorTemplate/Shared/Contracts/greeter.proto) [Service](BlazorTemplate/Server/GrpcServices/GreeterService.cs):
+and adds Role Authorization to the -[Greeter](BlazorTemplate/Client/Pages/GreeterGrpc.razor) -[gRPC](BlazorTemplate/Shared/Contracts/greeter.proto) -[Service](BlazorTemplate/Server/GrpcServices/GreeterService.cs):
 
 _Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_
 
