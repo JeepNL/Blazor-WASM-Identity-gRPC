@@ -1,8 +1,10 @@
 # Blazor WASM, IdentityServer4 with Multiple Roles &amp; gRPC Roles Authorization
 
-![.NET Core](https://github.com/JeepNL/Blazor-WASM-Identity-gRPC/workflows/.NET%20Core/badge.svg) _No status yet, how does this work?_ 😉 _(rhetoric: learning, learning!)_
+![.NET Core](https://github.com/JeepNL/Blazor-WASM-Identity-gRPC/workflows/.NET%20Core/badge.svg) _YIHAA!_ 😉 _(This thing does works)_
 
-This **.NET 5 Preview** repo combines two repo's by **@javiercn**:
+<img src="https://media.giphy.com/media/TH6DTcHdotDahRuVkL/giphy.gif" width="100">
+
+### This **.NET 5 Preview** repo combines two repo's by **@javiercn**:
 
 1. https://github.com/javiercn/BlazorAuthRoles
 2. https://github.com/javiercn/BlazorGrpcAuth
