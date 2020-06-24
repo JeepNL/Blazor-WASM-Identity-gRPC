@@ -4,12 +4,14 @@
 
 <img src="https://media.giphy.com/media/TH6DTcHdotDahRuVkL/giphy.gif" width="100">
 
-### This **.NET 5 Preview** repo combines two repo's by **@javiercn**:
+### This .NET 5 Preview repo combines two repo's by **@javiercn**:
 
 1. https://github.com/javiercn/BlazorAuthRoles
 2. https://github.com/javiercn/BlazorGrpcAuth
 
-and adds Role Authorization to the -[Greeter](BlazorTemplate/Client/Pages/GreeterGrpc.razor) -[gRPC](BlazorTemplate/Shared/Contracts/greeter.proto) -[Service](BlazorTemplate/Server/GrpcServices/GreeterService.cs):
+(_To run this repo you'll need **.NET 5.0 [SDK](https://dotnet.microsoft.com/download/dotnet-core)** and **Visual Studio [Preview](https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-preview)**_)
+
+I've added Role Authorization to the -[Greeter](BlazorTemplate/Client/Pages/GreeterGrpc.razor) -[gRPC](BlazorTemplate/Shared/Contracts/greeter.proto) -[Service](BlazorTemplate/Server/GrpcServices/GreeterService.cs):
 
 _Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_
 
