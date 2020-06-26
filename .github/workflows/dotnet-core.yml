@@ -16,7 +16,9 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 5.0.100-preview.5.20279.10
+        # See: https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json
+        dotnet-version: 5.0.100-preview.6.20318.15
+        # Previous: dotnet-version: 5.0.100-preview.5.20279.10
     - name: Install dependencies
       run: dotnet restore
     - name: Build
