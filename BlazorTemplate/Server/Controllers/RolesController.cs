@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using BlazorTemplate.Server.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using BlazorTemplate.Server.Data;
-using BlazorTemplate.Server.Models;
+using System.Threading.Tasks;
 
 namespace BlazorTemplate.Server.Controllers
 {

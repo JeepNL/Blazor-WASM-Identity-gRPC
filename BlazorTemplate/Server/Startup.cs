@@ -1,23 +1,19 @@
+using BlazorTemplate.Server.Data;
+using BlazorTemplate.Server.GrpcServices;
+using BlazorTemplate.Server.Models;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Linq;
-using BlazorTemplate.Server.Data;
-using BlazorTemplate.Server.Models;
 //using IdentityServer4.Services;
 using System;
 using System.IdentityModel.Tokens.Jwt;
-using BlazorTemplate.Server.GrpcServices;
-using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace BlazorTemplate.Server
 {
@@ -39,8 +35,9 @@ namespace BlazorTemplate.Server
                     Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+                .AddRoles<IdentityRole>() // For Roles, see (client side) /RolesClaimsPrincipalFactory.cs
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory>(); // To add a custom claim for the user, see: /Models/ApplicationUser.cs
 
             ///
             // This ...
@@ -48,13 +45,15 @@ namespace BlazorTemplate.Server
             services.AddIdentityServer()
                 .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(options =>
                 {
-                    options.IdentityResources["openid"].UserClaims.Add("role");
+                    options.IdentityResources["openid"].UserClaims.Add("role"); // Roles
                     options.ApiResources.Single().UserClaims.Add("role");
+                    options.IdentityResources["openid"].UserClaims.Add("custom_claim"); // Custom Claim
+                    options.ApiResources.Single().UserClaims.Add("custom_claim");
                 });
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("role");
 
             ///
-            // Or this (Use a Profile Service)
+            // TODO: Or this (Use a Profile Service)
             // Roles seem to work, Client displays them, but I can't add a Role: 403 Forbidden, Test with gRPC Authorization (Role=Administrators) as well.
             // See: https://docs.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/hosted-with-identity-server?tabs=visual-studio#profile-service
             ///

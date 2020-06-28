@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Google.Protobuf.WellKnownTypes;
+﻿using BlazorTemplate.Server.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using BlazorTemplate.Server.Models;
-using BlazorTemplate.Shared;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace BlazorTemplate.Server.Data
 {
