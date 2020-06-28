@@ -1,6 +1,6 @@
-# Blazor WASM, IdentityServer4 with Multiple Roles &amp; gRPC Roles Authorization
+# Blazor WASM, IdentityServer4 with Multiple Roles, Additional User Claim(s) &amp; gRPC Roles Authorization
 
-![.NET Core](https://github.com/JeepNL/Blazor-WASM-Identity-gRPC/workflows/.NET%20Core/badge.svg) _YIHAA!_ 😉 _(This thing does work!)_
+![.NET Core](https://github.com/JeepNL/Blazor-WASM-Identity-gRPC/workflows/.NET%20Core/badge.svg) _(Whoa Nelly, this thing does work!)_ 😉
 
 <img src="https://media.giphy.com/media/TH6DTcHdotDahRuVkL/giphy.gif" width="100">
 
@@ -43,39 +43,16 @@ The 'Administrators' &amp; 'Users' roles will be assigned to: `admin@example.com
 
 The 'Users' role will be assigned to: `user@example.com`
 
-#### TODO 1 - Additional Claim(s)
+### ~~TODO~~ DONE❗ - Additional Claim(s)
+(_By George, I think I've got it_)
 
-I've extended ASP.NET Identity AspNetUsers table with an extra 'CustomClaim' field (_see: Server/Models/[ApplicationUser.cs](BlazorTemplate/Server/Models/ApplicationUser.cs)_). I want to use that _([auto seeded](BlazorTemplate/Server/Data/SeedData.cs))_ `CustomClaim` value in the client but haven't figured out how to do that.
+1. I've extended ASP.NET Identity AspNetUsers table with an extra 'CustomClaim' field (_see: Server/Models/[ApplicationUser.cs](BlazorTemplate/Server/Models/ApplicationUser.cs)_).
+2. Seeded a value to that `CustomClaim` field  in: _Server/Data/[SeedData.cs](BlazorTemplate/Server/Data/SeedData.cs)_
+3. Added: _Server/[AppClaimsPrincipalFactory.cs](BlazorTemplate/Server/AppClaimsPrincipalFactory.cs)_
+4. Modified: _Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_ to use `AppClaimsPrincipalFactory.cs`
+5. When you run the app you'll see the `custom_claim` in the _Client/Pages/[Claims.razor](BlazorTemplate/Client/Pages/Claims.razor)_ page
 
-_Server/Models/[ApplicationUser.cs](BlazorTemplate/Server/Models/ApplicationUser.cs)_
-
-	namespace BlazorTemplate.Server.Models
-	{
-		public class ApplicationUser : IdentityUser
-		{
-			public string CustomClaim { get; set; }
-		}
-	}
-    
-_Server/Data/[SeedData.cs](BlazorTemplate/Server/Data/SeedData.cs)_
-
-	// Create Administrator
-	ApplicationUser admin = await UserManager.FindByEmailAsync("admin@example.com");
-	if (admin == null)
-	{
-		admin = new ApplicationUser()
-		{
-			UserName = "admin@example.com",
-			Email = "admin@example.com",
-			CustomClaim = "AdminClaim" // CustomClaim Value
-		};
-		await UserManager.CreateAsync(admin, "Qwerty1234#");
-	}
-	// Add Roles
-	await UserManager.AddToRoleAsync(admin, "Administrators");
-	await UserManager.AddToRoleAsync(admin, "Users");
-
-#### TODO 2 - Claims Profile Service
+### TODO - Claims Profile Service
 
 To use Name and Role claims with API authorization and Identity Server you can use one of the [following approaches](https://docs.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/hosted-with-identity-server#configure-identity-server) (_MS Docs_)
 
