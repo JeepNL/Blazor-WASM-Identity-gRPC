@@ -1,5 +1,8 @@
 # Blazor WASM, IdentityServer4 with Multiple Roles, Additional User Claim(s) &amp; gRPC Roles Authorization
 
+
+![Blazor Template Screenshot](img/screenshot.jpg)
+
 ![.NET Core](https://github.com/JeepNL/Blazor-WASM-Identity-gRPC/workflows/.NET%20Core/badge.svg) _(Whoa Nelly, this thing does work!)_ 😉
 
 <img src="https://media.giphy.com/media/TH6DTcHdotDahRuVkL/giphy.gif" width="100">
