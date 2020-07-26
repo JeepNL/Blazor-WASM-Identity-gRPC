@@ -19,7 +19,7 @@ namespace BlazorTemplate.Client
             if (user.Identity.IsAuthenticated)
             {
                 var identity = (ClaimsIdentity)user.Identity;
-                var roleClaims = identity.FindAll(identity.RoleClaimType);
+                var roleClaims = identity.FindAll(identity.RoleClaimType).ToArray();
                 if (roleClaims != null && roleClaims.Any())
                 {
                     foreach (var existingClaim in roleClaims)
