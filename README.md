@@ -1,5 +1,8 @@
-# Blazor WASM, IdentityServer4 with Multiple Roles, Additional User Claim(s) &amp; gRPC Roles Authorization
+### IMPORTANT
 
+BUG Solved, added: `.ToArray()` in _Client/[RolesClaimsPrincipalFactory.cs](BlazorTemplate/Client/RolesClaimsPrincipalFactory.cs)_ at [line 22](https://github.com/JeepNL/Blazor-WASM-Identity-gRPC/commit/7fa53fb695a6df6735f32f736e9abf89a84837be)
+
+# Blazor WASM, IdentityServer4 with Multiple Roles, Additional User Claim(s) &amp; gRPC Roles Authorization
 
 ![Blazor Template Screenshot](img/screenshot.jpg)
 
