@@ -64,6 +64,8 @@ namespace BlazorTemplate.Server
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 
+            services.AddDatabaseDeveloperPageExceptionFilter();
+
             services.AddControllersWithViews();
             services.AddRazorPages();
             services.AddGrpc();
@@ -77,8 +79,9 @@ namespace BlazorTemplate.Server
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
                 app.UseWebAssemblyDebugging();
+                app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
             }
             else
             {
