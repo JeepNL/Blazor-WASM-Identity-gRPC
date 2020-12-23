@@ -269,12 +269,15 @@ Run Server Solution File from Visual Studio, NGrok will automatically pick it up
 ![Test Development](img/2020-12-21_12-59-07.png)
 
 ### Acount Linking via Alexa App
+
+Linking Screen in Alexa App on iOS
+
 ![Alexa App](img/20201221_210439000_iOS.png)
 
-connect/authorization did not work
+Login Screen in the App
 
-![Alexa App Login Failed](img/20201223_153742000_iOS.png)
+![Alexa App Login](img/20201223_153742000_iOS.png)
 
-The code failed while trying to fetch code_challenge
+Alexa Account Linking Successful
 
-![Test Development Error](img/2020-12-21_16-03-10.png)
+![Alexa Linking Successful](img/2020-12-21_16-03-10.png)
