@@ -16,21 +16,8 @@ using Newtonsoft.Json;
 
 namespace BlazorTemplate.Server.Controllers
 {
-    //[ApiController]
-    //[Route("api/AlexaSkill")]
     public class AlexaSkillController : ControllerBase
     {
-        //private Microsoft.Extensions.Configuration.IConfiguration _config;
-        //private string _amazonLink;
-
-
-
-        //public AlexaSkillController(Microsoft.Extensions.Configuration.IConfiguration config)
-        //{
-        //    _config = config;
-        //    var alexaVendor = _config["Alexa:BlazorNews:VendorId"];
-        //    _amazonLink = "https://layla.amazon.com/spa/skill/account-linking-status.html?vendorId=" + alexaVendor;
-        //}
 
         [HttpPost("api/AlexaSkill/Request")]
         public IActionResult HandleResponse([FromBody] SkillRequest input)
@@ -93,12 +80,6 @@ namespace BlazorTemplate.Server.Controllers
             }
 
             return new OkObjectResult(response);
-        }
-
-        [HttpGet("RequestSimple/{clientId}")]
-        public IActionResult GetClientRequestParameters([FromRoute] string clientId)
-        {
-            return new OkObjectResult(clientId);
         }
 
         private static int GetNews()

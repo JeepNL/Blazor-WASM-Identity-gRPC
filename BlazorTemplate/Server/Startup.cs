@@ -90,45 +90,27 @@ namespace BlazorTemplate.Server
 
             clients.Add(client);
             clients.AddRange(configClients);
-
-            ///
-            // This ...
-            ///
+            
             services.AddIdentityServer()
                 .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(options =>
                 {
                     options.IdentityResources["openid"].UserClaims.Add("role"); // Roles
                     options.ApiResources.Single().UserClaims.Add("role");
-                    options.IdentityResources["openid"].UserClaims.Add("application_db_user_id"); // Custom Claim
-                    options.ApiResources.Single().UserClaims.Add("application_db_user_id");
                     options.IdentityResources["openid"].UserClaims.Add("email");
                     options.ApiResources.Single().UserClaims.Add("email");
                     options.IdentityResources["openid"].UserClaims.Add("name");
                     options.ApiResources.Single().UserClaims.Add("name");
-                    options.Clients.AddRange(clients.ToArray()); // added clients. trying to add alexa client as well
+                    options.Clients.AddRange(clients.ToArray()); 
                 });
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("role");
 
-            ///
-            // TODO: Or this (Use a Profile Service)
-            // Roles seem to work, Client displays them, but I can't add a Role: 403 Forbidden, Test with gRPC Authorization (Role=Administrators) as well.
-            // See: https://docs.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/hosted-with-identity-server?tabs=visual-studio#profile-service
-            ///
-            //services.AddIdentityServer()
-            //    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
             services.AddTransient<IProfileService, ProfileService>();
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 
             services.AddDatabaseDeveloperPageExceptionFilter();
-            services.AddControllersWithViews().AddNewtonsoftJson();
-            //.AddJsonOptions(options =>
-            //{
-            //    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
-            //    options.JsonSerializerOptions.PropertyNamingPolicy = null;
-            //});
-
+            services.AddControllersWithViews().AddNewtonsoftJson(); // newtonsoftjson is needed because alexa.net has not been migrated to Text.Json yet.
 
             services.AddRazorPages();
             services.AddGrpc();

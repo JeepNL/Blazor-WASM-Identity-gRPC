@@ -69,61 +69,68 @@ I'm using the (_first_) 'API authorization options' now but I've included _Serve
 
 _Server/[ProfileService.cs](BlazorTemplate/Server/ProfileService.cs)_
 
-	namespace BlazorTemplate.Server
-	{
-		public class ProfileService : IProfileService
-		{
-			public ProfileService()
-			{
-			}
+```csharp
+ public ProfileService(UserManager<ApplicationUser> userManager, IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory)
+        {
+            _userManager = userManager;
+            _claimsFactory = claimsFactory;
+        }
 
-			public Task GetProfileDataAsync(ProfileDataRequestContext context)
-			{
-				var nameClaim = context.Subject.FindAll(JwtClaimTypes.Name);
-				context.IssuedClaims.AddRange(nameClaim);
+        public async Task GetProfileDataAsync(ProfileDataRequestContext context)
+        {
+            var sub = context.Subject.GetSubjectId();
+            var user = await _userManager.FindByIdAsync(sub);
+            var principal = await _claimsFactory.CreateAsync(user);
+            var claims = principal.Claims.ToList();
+            
+            var nameClaim = context.Subject.FindAll(JwtClaimTypes.Name);
+            
+            var roles = await _userManager.GetRolesAsync(user);
+            var roleClaims = roles.Select(role => new Claim(JwtClaimTypes.Role, role));
+            
+            claims = claims.Where(claim => context.RequestedClaimTypes.Contains(claim.Type)).ToList();
 
-				var roleClaims = context.Subject.FindAll(JwtClaimTypes.Role);
-				context.IssuedClaims.AddRange(roleClaims);
+            // Add custom claims in token here based on user properties or any other source
+            claims.Add(new Claim("username", user.UserName ?? string.Empty));
+            claims.AddRange(nameClaim);
+            claims.AddRange(roleClaims); 
+            context.IssuedClaims = claims;
+        }
+```
 
-				return Task.CompletedTask;
-			}
-
-			public Task IsActiveAsync(IsActiveContext context)
-			{
-				return Task.CompletedTask;
-			}
-		}
-	}
-
-_Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_
-
-	///
-	// Or this (Use a Profile Service)
-	// Roles seem to work, Client displays them, but I can't add a Role: 403 Forbidden, Test with gRPC Authorization (Role=Administrators) as well.
-	// See: https://docs.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/hosted-with-identity-server?tabs=visual-studio#profile-service
-	///
-	//services.AddIdentityServer()
-	//    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
-	//services.AddTransient<IProfileService, ProfileService>();
 
 # Alexa Integration Trial
 ## Code Setup
 _Server/Controllers/[AlexaSkillController.cs](BlazorTemplate/Server/Controllers/AlexaSkillController.cs)_
 
 ```csharp
-		[HttpPost("Request")]
+	  [HttpPost("api/AlexaSkill/Request")]
         public IActionResult HandleResponse([FromBody] SkillRequest input)
+
         {
+
             var requestType = input.GetRequestType();
             SkillResponse response = null;
 
-            //input.Context.System.User.AccessToken
-            //input.Context.System.User.UserId;
+            var name = "";
+            var jwtEncodedString = input.Session.User.AccessToken;
+            if (jwtEncodedString is null)
+            {
+                response = ResponseBuilder.TellWithLinkAccountCard("You are not currently linked to this skill. Please go into your Alexa app and sign in.");
+                response.Response.ShouldEndSession = true;
 
-            // return a welcome message
+                return new OkObjectResult(response);
+            }
+
+
+            var token = new JwtSecurityToken(jwtEncodedString: jwtEncodedString);
+            var claims = token.Claims;
+            name = claims.First(c => c.Type == "name").Value;
+
+
             if (requestType == typeof(LaunchRequest))
             {
-                response = ResponseBuilder.Tell("Welcome to Blazor News!");
+                response = ResponseBuilder.Tell($"Welcome to Blazor News {name}!");
                 response.Response.ShouldEndSession = false;
             }
 
@@ -132,15 +139,15 @@ _Server/Controllers/[AlexaSkillController.cs](BlazorTemplate/Server/Controllers/
             {
                 // do some intent-based stuff
                 var intentRequest = input.Request as IntentRequest;
-                 if (intentRequest.Intent.Name.Equals("news"))
+                if (intentRequest.Intent.Name.Equals("news"))
                 {
                     // get the pull requests
                     var news = GetNews();
 
                     if (news == 0)
-                        response = ResponseBuilder.Tell("You have no pull requests at this time.");
+                        response = ResponseBuilder.Tell("We have no blazor news at this time.");
                     else
-                        response = ResponseBuilder.Tell("There are " + news.ToString() + " pull requests waiting for you at GitHub.com.");
+                        response = ResponseBuilder.Tell("There are " + news.ToString() + " blazor news articles.");
 
                     response.Response.ShouldEndSession = false;
                 }
@@ -160,7 +167,7 @@ _Server/Controllers/[AlexaSkillController.cs](BlazorTemplate/Server/Controllers/
             return new OkObjectResult(response);
         }
 
-		private static int GetNews()
+        private static int GetNews()
         {
             return 3;
         }
@@ -169,55 +176,68 @@ _Server/Controllers/[AlexaSkillController.cs](BlazorTemplate/Server/Controllers/
 
 _Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_
 
+changed made in StartUp.cs
 ```csharp
-  var alexaVendor = Configuration["Alexa:BlazorNews:VendorId"];
-            var alexaSecretText = "AlexaBlazorNewsSecret";// I use this secret under the Alexa configuration.
+            var alexaVendor = Configuration["Alexa:BlazorNews:VendorId"];
+            var alexaSecretText = "AlexaBlazorNewsSecret"; // I use this secret under the Alexa configuration.
             var client = new IdentityServer4.Models.Client
             {
                 ClientId = "AlexaBlazorNews",
-                ClientName = "Alexa",
+                ClientName = "AlexaBlazorNews",
                 Enabled = true,
                 AllowedGrantTypes = GrantTypes.Code,
                 AllowAccessTokensViaBrowser = true,
                 RequireConsent = false,
+                RequirePkce = false,
+                RequireClientSecret = true,
                 AllowRememberConsent = true,
-                ClientSecrets = { new Secret(alexaSecretText) },
-                RedirectUris = {
-        "https://pitangui.amazon.com/api/skill/link/"+alexaVendor,
-        "https://layla.amazon.com/api/skill/link/"+alexaVendor
-    },
-                PostLogoutRedirectUris = {
-        "https://pitangui.amazon.com/api/skill/link/"+alexaVendor,
-        "https://layla.amazon.com/api/skill/link/"+alexaVendor
-    },
+                ClientSecrets = {new Secret(alexaSecretText.Sha256()) },
+                RedirectUris =
+                {
+                    "https://pitangui.amazon.com/api/skill/link/" + alexaVendor,
+                    "https://layla.amazon.com/api/skill/link/" + alexaVendor,
+                    "https://alexa.amazon.co.jp/api/skill/link/"+alexaVendor
+                },
+                PostLogoutRedirectUris =
+                {
+                    "https://pitangui.amazon.com/api/skill/link/" + alexaVendor,
+                    "https://layla.amazon.com/api/skill/link/" + alexaVendor,
+                    "https://alexa.amazon.co.jp/api/skill/link/"+alexaVendor
+                },
                 AllowedScopes =
-    {
-        IdentityServerConstants.StandardScopes.OpenId,
-        IdentityServerConstants.StandardScopes.Profile,
-        IdentityServerConstants.StandardScopes.Email,
-        IdentityServerConstants.StandardScopes.Phone,
-        "alexa"
-    },
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    IdentityServerConstants.StandardScopes.Email,
+                    IdentityServerConstants.StandardScopes.Phone,
+                    "alexa"
+                },
                 AllowOfflineAccess = true,
-                AccessTokenType = AccessTokenType.Jwt
+                AccessTokenType = AccessTokenType.Jwt,
+                
             };
 
             var clients = new List<IdentityServer4.Models.Client>();
-            var configClients = Configuration.GetSection("IdentityServer:Clients").Get<IdentityServer4.Models.Client[]>();
+            var configClients = Configuration.GetSection("IdentityServer:Clients")
+                .Get<IdentityServer4.Models.Client[]>();
 
             clients.Add(client);
             clients.AddRange(configClients);
-
             
             services.AddIdentityServer()
                 .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(options =>
                 {
                     options.IdentityResources["openid"].UserClaims.Add("role"); // Roles
                     options.ApiResources.Single().UserClaims.Add("role");
-                    options.IdentityResources["openid"].UserClaims.Add("custom_claim"); // Custom Claim
-                    options.ApiResources.Single().UserClaims.Add("custom_claim");
-                    options.Clients.AddRange(clients.ToArray()); // added clients. trying to add alexa client as well
+                    options.IdentityResources["openid"].UserClaims.Add("email");
+                    options.ApiResources.Single().UserClaims.Add("email");
+                    options.IdentityResources["openid"].UserClaims.Add("name");
+                    options.ApiResources.Single().UserClaims.Add("name");
+                    options.Clients.AddRange(clients.ToArray()); 
                 });
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("role");
+            services.AddTransient<IProfileService, ProfileService>();
+            services.AddControllersWithViews().AddNewtonsoftJson(); // newtonsoftjson is needed because alexa.net has not been migrated to Text.Json yet.
 ```
 
 ## NGrok Setup
