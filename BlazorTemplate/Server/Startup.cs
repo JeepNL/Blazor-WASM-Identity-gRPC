@@ -1,6 +1,8 @@
 using BlazorTemplate.Server.Data;
 using BlazorTemplate.Server.GrpcServices;
 using BlazorTemplate.Server.Models;
+using IdentityServer4;
+using IdentityServer4.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -12,8 +14,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 //using IdentityServer4.Services;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Text.Json;
+using IdentityServer4.Services;
 
 namespace BlazorTemplate.Server
 {
@@ -37,7 +42,54 @@ namespace BlazorTemplate.Server
             services.AddDefaultIdentity<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = false)
                 .AddRoles<IdentityRole>() // For Roles, see (client side) /RolesClaimsPrincipalFactory.cs
                 .AddEntityFrameworkStores<ApplicationDbContext>()
-                .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory>(); // To add a custom claim for the user, see: /Models/ApplicationUser.cs
+                .AddClaimsPrincipalFactory<AppClaimsPrincipalFactory
+                >(); // To add a custom claim for the user, see: /Models/ApplicationUser.cs
+
+            var alexaVendor = Configuration["Alexa:BlazorNews:VendorId"];
+            var alexaSecretText = "AlexaBlazorNewsSecret"; // I use this secret under the Alexa configuration.
+            var client = new IdentityServer4.Models.Client
+            {
+                ClientId = "AlexaBlazorNews",
+                ClientName = "AlexaBlazorNews",
+                Enabled = true,
+                AllowedGrantTypes = GrantTypes.Code,
+                AllowAccessTokensViaBrowser = true,
+                RequireConsent = false,
+                RequirePkce = false,
+                RequireClientSecret = true,
+                AllowRememberConsent = true,
+                ClientSecrets = {new Secret(alexaSecretText.Sha256()) },
+                RedirectUris =
+                {
+                    "https://pitangui.amazon.com/api/skill/link/" + alexaVendor,
+                    "https://layla.amazon.com/api/skill/link/" + alexaVendor,
+                    "https://alexa.amazon.co.jp/api/skill/link/"+alexaVendor
+                },
+                PostLogoutRedirectUris =
+                {
+                    "https://pitangui.amazon.com/api/skill/link/" + alexaVendor,
+                    "https://layla.amazon.com/api/skill/link/" + alexaVendor,
+                    "https://alexa.amazon.co.jp/api/skill/link/"+alexaVendor
+                },
+                AllowedScopes =
+                {
+                    IdentityServerConstants.StandardScopes.OpenId,
+                    IdentityServerConstants.StandardScopes.Profile,
+                    IdentityServerConstants.StandardScopes.Email,
+                    IdentityServerConstants.StandardScopes.Phone,
+                    "alexa"
+                },
+                AllowOfflineAccess = true,
+                AccessTokenType = AccessTokenType.Jwt,
+                
+            };
+
+            var clients = new List<IdentityServer4.Models.Client>();
+            var configClients = Configuration.GetSection("IdentityServer:Clients")
+                .Get<IdentityServer4.Models.Client[]>();
+
+            clients.Add(client);
+            clients.AddRange(configClients);
 
             ///
             // This ...
@@ -47,8 +99,13 @@ namespace BlazorTemplate.Server
                 {
                     options.IdentityResources["openid"].UserClaims.Add("role"); // Roles
                     options.ApiResources.Single().UserClaims.Add("role");
-                    options.IdentityResources["openid"].UserClaims.Add("custom_claim"); // Custom Claim
-                    options.ApiResources.Single().UserClaims.Add("custom_claim");
+                    options.IdentityResources["openid"].UserClaims.Add("application_db_user_id"); // Custom Claim
+                    options.ApiResources.Single().UserClaims.Add("application_db_user_id");
+                    options.IdentityResources["openid"].UserClaims.Add("email");
+                    options.ApiResources.Single().UserClaims.Add("email");
+                    options.IdentityResources["openid"].UserClaims.Add("name");
+                    options.ApiResources.Single().UserClaims.Add("name");
+                    options.Clients.AddRange(clients.ToArray()); // added clients. trying to add alexa client as well
                 });
             JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Remove("role");
 
@@ -59,14 +116,20 @@ namespace BlazorTemplate.Server
             ///
             //services.AddIdentityServer()
             //    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
-            //services.AddTransient<IProfileService, ProfileService>();
+            services.AddTransient<IProfileService, ProfileService>();
 
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 
             services.AddDatabaseDeveloperPageExceptionFilter();
+            services.AddControllersWithViews().AddNewtonsoftJson();
+            //.AddJsonOptions(options =>
+            //{
+            //    options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+            //    options.JsonSerializerOptions.PropertyNamingPolicy = null;
+            //});
 
-            services.AddControllersWithViews();
+
             services.AddRazorPages();
             services.AddGrpc();
         }

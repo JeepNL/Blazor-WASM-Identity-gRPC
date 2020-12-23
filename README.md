@@ -2,7 +2,7 @@
 
 BUG Solved, added: `.ToArray()` in _Client/[RolesClaimsPrincipalFactory.cs](BlazorTemplate/Client/RolesClaimsPrincipalFactory.cs)_ at [line 22](https://github.com/JeepNL/Blazor-WASM-Identity-gRPC/commit/7fa53fb695a6df6735f32f736e9abf89a84837be)
 
-# Blazor WASM, IdentityServer4 with Multiple Roles, Additional User Claim(s) &amp; gRPC Roles Authorization
+# Blazor WASM, IdentityServer4 with Multiple Roles, Additional User Claim(s) &amp; gRPC Roles Authorization &amp; Alexa Integration
 
 ![Blazor Template Screenshot](img/screenshot.jpg)
 
@@ -106,3 +106,175 @@ _Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_
 	//    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
 	//services.AddTransient<IProfileService, ProfileService>();
 
+# Alexa Integration Trial
+## Code Setup
+_Server/Controllers/[AlexaSkillController.cs](BlazorTemplate/Server/Controllers/AlexaSkillController.cs)_
+
+```csharp
+		[HttpPost("Request")]
+        public IActionResult HandleResponse([FromBody] SkillRequest input)
+        {
+            var requestType = input.GetRequestType();
+            SkillResponse response = null;
+
+            //input.Context.System.User.AccessToken
+            //input.Context.System.User.UserId;
+
+            // return a welcome message
+            if (requestType == typeof(LaunchRequest))
+            {
+                response = ResponseBuilder.Tell("Welcome to Blazor News!");
+                response.Response.ShouldEndSession = false;
+            }
+
+            // return information from an intent
+            else if (requestType == typeof(IntentRequest))
+            {
+                // do some intent-based stuff
+                var intentRequest = input.Request as IntentRequest;
+                 if (intentRequest.Intent.Name.Equals("news"))
+                {
+                    // get the pull requests
+                    var news = GetNews();
+
+                    if (news == 0)
+                        response = ResponseBuilder.Tell("You have no pull requests at this time.");
+                    else
+                        response = ResponseBuilder.Tell("There are " + news.ToString() + " pull requests waiting for you at GitHub.com.");
+
+                    response.Response.ShouldEndSession = false;
+                }
+                else
+                {
+                    response = ResponseBuilder.Ask("I don't understand. Can you please try again?", null);
+                    response.Response.ShouldEndSession = false;
+
+                }
+            }
+            else if (requestType == typeof(SessionEndedRequest))
+            {
+                response = ResponseBuilder.Tell("See you next time!");
+                response.Response.ShouldEndSession = true;
+            }
+
+            return new OkObjectResult(response);
+        }
+
+		private static int GetNews()
+        {
+            return 3;
+        }
+
+```
+
+_Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_
+
+```csharp
+  var alexaVendor = Configuration["Alexa:BlazorNews:VendorId"];
+            var alexaSecretText = "AlexaBlazorNewsSecret";// I use this secret under the Alexa configuration.
+            var client = new IdentityServer4.Models.Client
+            {
+                ClientId = "AlexaBlazorNews",
+                ClientName = "Alexa",
+                Enabled = true,
+                AllowedGrantTypes = GrantTypes.Code,
+                AllowAccessTokensViaBrowser = true,
+                RequireConsent = false,
+                AllowRememberConsent = true,
+                ClientSecrets = { new Secret(alexaSecretText) },
+                RedirectUris = {
+        "https://pitangui.amazon.com/api/skill/link/"+alexaVendor,
+        "https://layla.amazon.com/api/skill/link/"+alexaVendor
+    },
+                PostLogoutRedirectUris = {
+        "https://pitangui.amazon.com/api/skill/link/"+alexaVendor,
+        "https://layla.amazon.com/api/skill/link/"+alexaVendor
+    },
+                AllowedScopes =
+    {
+        IdentityServerConstants.StandardScopes.OpenId,
+        IdentityServerConstants.StandardScopes.Profile,
+        IdentityServerConstants.StandardScopes.Email,
+        IdentityServerConstants.StandardScopes.Phone,
+        "alexa"
+    },
+                AllowOfflineAccess = true,
+                AccessTokenType = AccessTokenType.Jwt
+            };
+
+            var clients = new List<IdentityServer4.Models.Client>();
+            var configClients = Configuration.GetSection("IdentityServer:Clients").Get<IdentityServer4.Models.Client[]>();
+
+            clients.Add(client);
+            clients.AddRange(configClients);
+
+            
+            services.AddIdentityServer()
+                .AddApiAuthorization<ApplicationUser, ApplicationDbContext>(options =>
+                {
+                    options.IdentityResources["openid"].UserClaims.Add("role"); // Roles
+                    options.ApiResources.Single().UserClaims.Add("role");
+                    options.IdentityResources["openid"].UserClaims.Add("custom_claim"); // Custom Claim
+                    options.ApiResources.Single().UserClaims.Add("custom_claim");
+                    options.Clients.AddRange(clients.ToArray()); // added clients. trying to add alexa client as well
+                });
+```
+
+## NGrok Setup
+
+![Download Grok](img/2020-12-21_11-49-35.png)
+![NGrok Token Setup](img/2020-12-21_13-55-45.png)
+![NGROK command](img/2020-12-21_13-54-17.png)
+![NGrok url for forwarding](img/2020-12-21_13-56-31.png)
+
+## Alexa Console Setup
+
+![Alexa Create New Skill](img/2020-12-21_11-45-28.png)
+![Alexa Choose Template](img/2020-12-21_11-45-57.png)
+![Skill Builder Checklist](img/2020-12-21_11-46-32.png)
+![Skill Invocation](img/2020-12-21_11-47-33.png)
+![Create Intent](img/2020-12-21_11-48-11.png)
+![Utterances](img/2020-12-21_11-48-43.png)
+
+```
+Default Region: https://a9afa2d4182f.ngrok.io/api/AlexaSkill/Request
+```
+
+![Endpoint](img/2020-12-21_11-54-46.png)
+
+NGrok url was changed as I had restarted the Ngrok. VendorId is picked from here.
+
+```
+Web Authotization URI: https://a9afa2d4182f.ngrok.io/connect/authorize
+Access Token URI: https://a9afa2d4182f.ngrok.io/connect/token
+Client ID: AlexaBlazorNews
+Your Secret: AlexaBlazorNewsSecret   (this will be used in the code)
+Your Authentication Scheme: I changed it to Credentials in request body. Still did not work. Need to read more.
+```
+![Account Linking](img/2020-12-21_12-03-15.png)
+
+
+
+## User Secret Setup
+
+VendorId setup
+![User Secret Setup](img/2020-12-21_12-50-42.png)
+
+## Blazor WASM
+
+Run Server Solution File from Visual Studio, NGrok will automatically pick it up.
+
+## Testing
+### Request
+![Test Development](img/2020-12-21_12-59-07.png)
+
+### Acount Linking via Alexa App
+![Alexa App](img/20201221_210439000_iOS.png)
+
+connect/authorization did not work
+
+![Alexa App Login Failed](img/20201223_153742000_iOS.png)
+
+The code failed while trying to fetch code_challenge
+
+![Test Development Error](img/2020-12-21_16-03-10.png)

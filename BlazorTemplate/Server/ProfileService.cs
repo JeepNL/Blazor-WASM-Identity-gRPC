@@ -1,36 +1,52 @@
-﻿using IdentityModel;
+﻿using System.Linq;
+using System.Security.Claims;
+using IdentityModel;
 using IdentityServer4.Models;
 using IdentityServer4.Services;
 using System.Threading.Tasks;
+using BlazorTemplate.Server.Models;
+using IdentityServer4.Extensions;
+using Microsoft.AspNetCore.Identity;
 
 namespace BlazorTemplate.Server
 {
     public class ProfileService : IProfileService
     {
-        public ProfileService()
+        private readonly IUserClaimsPrincipalFactory<ApplicationUser> _claimsFactory;
+        private readonly UserManager<ApplicationUser> _userManager;
+
+        public ProfileService(UserManager<ApplicationUser> userManager, IUserClaimsPrincipalFactory<ApplicationUser> claimsFactory)
         {
+            _userManager = userManager;
+            _claimsFactory = claimsFactory;
         }
 
-        public Task GetProfileDataAsync(ProfileDataRequestContext context)
+        public async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
-            // Original
+            var sub = context.Subject.GetSubjectId();
+            var user = await _userManager.FindByIdAsync(sub);
+            var principal = await _claimsFactory.CreateAsync(user);
+            var claims = principal.Claims.ToList();
+            
             var nameClaim = context.Subject.FindAll(JwtClaimTypes.Name);
-            context.IssuedClaims.AddRange(nameClaim);
+            
+            var roles = await _userManager.GetRolesAsync(user);
+            var roleClaims = roles.Select(role => new Claim(JwtClaimTypes.Role, role));
+            
+            claims = claims.Where(claim => context.RequestedClaimTypes.Contains(claim.Type)).ToList();
 
-            var roleClaims = context.Subject.FindAll(JwtClaimTypes.Role);
-            context.IssuedClaims.AddRange(roleClaims);
-
-            // Edit
-            //context.IssuedClaims.AddRange(context.Subject.FindAll("name"));
-            //context.IssuedClaims.AddRange(context.Subject.FindAll("role"));
-
-            return Task.CompletedTask;
+            // Add custom claims in token here based on user properties or any other source
+            claims.Add(new Claim("username", user.UserName ?? string.Empty));
+            claims.AddRange(nameClaim);
+            claims.AddRange(roleClaims); 
+            context.IssuedClaims = claims;
         }
 
-        public Task IsActiveAsync(IsActiveContext context)
+        public async Task IsActiveAsync(IsActiveContext context)
         {
-            return Task.CompletedTask;
+            var sub = context.Subject.GetSubjectId();
+            var user = await _userManager.FindByIdAsync(sub);
+            context.IsActive = user != null;
         }
-
     }
 }
