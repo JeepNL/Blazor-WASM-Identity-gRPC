@@ -14,7 +14,7 @@ namespace BlazorTemplate.Server.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.0");
+                .HasAnnotation("ProductVersion", "6.0.0-preview.1.21102.2");
 
             modelBuilder.Entity("BlazorTemplate.Server.Models.ApplicationUser", b =>
                 {
