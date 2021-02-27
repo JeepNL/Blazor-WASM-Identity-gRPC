@@ -45,7 +45,7 @@ The 'Administrators' &amp; 'Users' roles will be assigned to: `admin@example.com
 
 The 'Users' role will be assigned to: `user@example.com`
 
-### ~~TODO~~ DONE❗ - Additional Claim(s)
+### Additional Claim(s)
 (_By George, I think I've got it_)
 
 1. I've extended ASP.NET Identity AspNetUsers table with an extra 'CustomClaim' field (_see: Server/Models/[ApplicationUser.cs](BlazorTemplate/Server/Models/ApplicationUser.cs)_).
@@ -53,52 +53,4 @@ The 'Users' role will be assigned to: `user@example.com`
 3. Added: _Server/[AppClaimsPrincipalFactory.cs](BlazorTemplate/Server/AppClaimsPrincipalFactory.cs)_
 4. Modified: _Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_ to use `AppClaimsPrincipalFactory.cs`
 5. When you run the app you'll see the `custom_claim` in the _Client/Pages/[Claims.razor](BlazorTemplate/Client/Pages/Claims.razor)_ page
-
-### TODO - Claims Profile Service
-
-To use Name and Role claims with API authorization and Identity Server you can use one of the [following approaches](https://docs.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/hosted-with-identity-server#configure-identity-server) (_MS Docs_)
-
-1. API authorization options
-2. Profile Service
-
-I'm using the (_first_) 'API authorization options' now but I've included _Server/[ProfileService.cs](BlazorTemplate/Server/ProfileService.cs)_ and included (_commented_) code in _Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_ to use that, but I haven't got it working yet.
-
-_Server/[ProfileService.cs](BlazorTemplate/Server/ProfileService.cs)_
-
-	namespace BlazorTemplate.Server
-	{
-		public class ProfileService : IProfileService
-		{
-			public ProfileService()
-			{
-			}
-
-			public Task GetProfileDataAsync(ProfileDataRequestContext context)
-			{
-				var nameClaim = context.Subject.FindAll(JwtClaimTypes.Name);
-				context.IssuedClaims.AddRange(nameClaim);
-
-				var roleClaims = context.Subject.FindAll(JwtClaimTypes.Role);
-				context.IssuedClaims.AddRange(roleClaims);
-
-				return Task.CompletedTask;
-			}
-
-			public Task IsActiveAsync(IsActiveContext context)
-			{
-				return Task.CompletedTask;
-			}
-		}
-	}
-
-_Server/[Startup.cs](BlazorTemplate/Server/Startup.cs)_
-
-	///
-	// Or this (Use a Profile Service)
-	// Roles seem to work, Client displays them, but I can't add a Role: 403 Forbidden, Test with gRPC Authorization (Role=Administrators) as well.
-	// See: https://docs.microsoft.com/en-us/aspnet/core/blazor/security/webassembly/hosted-with-identity-server?tabs=visual-studio#profile-service
-	///
-	//services.AddIdentityServer()
-	//    .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
-	//services.AddTransient<IProfileService, ProfileService>();
 
