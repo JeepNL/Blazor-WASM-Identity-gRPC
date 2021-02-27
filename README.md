@@ -1,7 +1,3 @@
-### IMPORTANT
-
-BUG Solved, added: `.ToArray()` in _Client/[RolesClaimsPrincipalFactory.cs](BlazorTemplate/Client/RolesClaimsPrincipalFactory.cs)_ at [line 22](https://github.com/JeepNL/Blazor-WASM-Identity-gRPC/commit/7fa53fb695a6df6735f32f736e9abf89a84837be)
-
 # Blazor WASM, IdentityServer4 with Multiple Roles, Additional User Claim(s) &amp; gRPC Roles Authorization
 
 ![Blazor Template Screenshot](img/screenshot.jpg)
@@ -10,12 +6,12 @@ BUG Solved, added: `.ToArray()` in _Client/[RolesClaimsPrincipalFactory.cs](Blaz
 
 <img src="https://media.giphy.com/media/TH6DTcHdotDahRuVkL/giphy.gif" width="100">
 
-### This .NET 5 Preview repo combines two repo's by **@javiercn**:
+### This .NET 6 Preview repo combines two repo's by **@javiercn**:
 
 1. https://github.com/javiercn/BlazorAuthRoles
 2. https://github.com/javiercn/BlazorGrpcAuth
 
-(_To run this repo you'll need **.NET 5.0 [SDK](https://dotnet.microsoft.com/download/dotnet-core)** and **Visual Studio [Preview](https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-preview)**_)
+(_To run this repo you'll need **.NET 6.0 [SDK](https://dotnet.microsoft.com/download/dotnet-core)** and **Visual Studio [Preview](https://docs.microsoft.com/en-us/visualstudio/releases/2019/release-notes-preview)**_)
 
 I've added Role Authorization to the -[Greeter](BlazorTemplate/Client/Pages/GreeterGrpc.razor) -[gRPC](BlazorTemplate/Shared/Contracts/greeter.proto) -[Service](BlazorTemplate/Server/GrpcServices/GreeterService.cs):
 
