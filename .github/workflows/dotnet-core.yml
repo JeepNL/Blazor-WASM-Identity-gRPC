@@ -17,7 +17,8 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         # See: (SDK) https://dotnetcli.blob.core.windows.net/dotnet/release-metadata/releases-index.json
-        dotnet-version: 6.0.100-preview.1.21103.13
+        dotnet-version: 6.0.100-preview.7.21379.14
+        # Previous: dotnet-version: 6.0.100-preview.1.21103.13
         # Previous: dotnet-version: 5.0.100
         # Previous: dotnet-version: 5.0.100-preview.5.20279.10
     - name: Install dependencies
