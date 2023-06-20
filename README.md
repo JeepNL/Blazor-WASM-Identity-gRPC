@@ -1,4 +1,4 @@
-# Blazor WASM with gRPC Authentication and Authorization, Multiple Roles, Additional User Claim(s) &amp; 
+# Blazor WASM with gRPC Authentication and Authorization, Multiple Roles, Additional User Claim(s)
 
 ![Blazor Template Screenshot](img/screenshot.jpg)
 
