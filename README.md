@@ -1,4 +1,4 @@
-# Blazor WASM, IdentityServer4 with Multiple Roles, Additional User Claim(s) &amp; gRPC Roles Authorization
+# Blazor WASM with gRPC Roles Authentication and Authorization, Multiple Roles, Additional User Claim(s) &amp; 
 
 ![Blazor Template Screenshot](img/screenshot.jpg)
 
